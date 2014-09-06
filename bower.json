@@ -1,0 +1,20 @@
+{
+  "name": "ziax-dive",
+  "version": "0.0.0",
+  "homepage": "https://github.com/ziaxdk/ziax-dive",
+  "authors": [
+    "ziax <ziaxdk@gmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "src/lib",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "ionic": "~0.9.27"
+  }
+}
