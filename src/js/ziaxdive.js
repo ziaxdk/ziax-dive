@@ -25,14 +25,6 @@ angular.module('ziaxdiveApp', ['ionic'])
         }
       }
     })
-    .state('tabs.facts2', {
-      url: "/facts2",
-      views: {
-        'home-tab': {
-          templateUrl: "templates/facts2.html"
-        }
-      }
-    })
     .state('tabs.about', {
       url: "/about",
       views: {
@@ -41,24 +33,6 @@ angular.module('ziaxdiveApp', ['ionic'])
         }
       }
     })
-    .state('tabs.navstack', {
-      url: "/navstack",
-      views: {
-        'about-tab': {
-          templateUrl: "templates/nav-stack.html"
-        }
-      }
-    })
-    .state('tabs.contact', {
-      url: "/contact",
-      views: {
-        'contact-tab': {
-          templateUrl: "templates/contact.html"
-        }
-      }
-    });
-
-
    $urlRouterProvider.otherwise("/tab/home");
 
 })
@@ -149,6 +123,10 @@ angular.module('ziaxdiveApp', ['ionic'])
   // $scope.safestop = false;
 
   // $scope.metric = Settings.metrics[0].text;
+
+  $scope.scroll = function() {
+    console.log('scroll');
+  }
 
   $scope.$watch('data.time', function(v) {
      findGroup();

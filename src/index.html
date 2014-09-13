@@ -47,7 +47,7 @@
       </ion-nav-back-button>
     </ion-nav-bar>
              
-    <ion-nav-view animation="slide-left-right-ios7"></ion-nav-view>
+    <ion-nav-view animation="slide-left-right"></ion-nav-view>
   </body>
 
   <script id="templates/tabs.html" type="text/ng-template">
@@ -69,36 +69,45 @@
   </script>
 
   <script id="templates/home.html" type="text/ng-template">
-    <ion-view title="Home">
-      <ion-content class="padding">
+    <ion-view hide-back-button="true" title="Home">
+
+      <ion-nav-buttons side="right">
+        <a class="button" ui-sref="tabs.time">
+          Time
+        </a>
+      </ion-nav-buttons>
+
+      <ion-content direction="x" class="padding center">
         <div class="box">
           <div class="jog" jog-depth="data.depth"></div>
         </div>
-        <div class="center">
-          <p style="font-size: 3em; margin-top: 10px">
-            <a class="button button-stable button-small" ui-sref="tabs.home">&lt;</a>
-            Depth: <span add-metrics>{{data.depth}}</span>
-            <a class="button button-stable button-small" ui-sref="tabs.time">&gt;</a>
-          </p>
-        </div>
+        <h1>Depth: <span add-metrics>{{data.depth}}</span></h1>
       </ion-content>
     </ion-view>
   </script>
 
   <script id="templates/time.html" type="text/ng-template">
-    <ion-view title="Home">
-      <ion-content class="padding">
+    <ion-view hide-back-button="true" title="Home">
+
+      <ion-nav-buttons side="left">
+        <a class="button" ui-sref="tabs.home">
+          Depth
+        </a>
+      </ion-nav-buttons>
+
+      <ion-nav-buttons side="right">
+        <a class="button" ui-sref="tabs.surface">
+          Surface
+        </a>
+      </ion-nav-buttons>
+
+
+      <ion-content class="padding center">
         <div class="box">
           <div class="jog" jog-time="data.time" depth="{{data.depth}}"></div>
         </div>
-        <div class="center">
-          <h1 ng-class="{ safestop: data.safestop, decolimit: data.decolimit }">Time: <span>{{data.time}}</span></h1>
-          <p style="font-size: 3em; margin-top: 10px">
-            <a class="button button-stable button-small" ui-sref="tabs.home">&lt;</a>
-            Group: <span>{{data.group|uppercase}}</span>
-            <a class="button button-stable button-small" ui-sref="tabs.time">&gt;</a>
-          </p>
-        </div>
+        <h1 ng-class="{ safestop: data.safestop, decolimit: data.decolimit }">Time: <span>{{data.time}}</span></h1>
+        <h1>Group: <span>{{data.group|uppercase}}</span></h1>
       </ion-content>
     </ion-view>
   </script>
@@ -109,6 +118,7 @@
         <h1>Ziax dive</h1>
         <p>I took the PADI Open Water certificate, and we learned to use the RDPs table from PADI. I thought it could be fun and educational to build an app, which calculates the values.</p>
         <p>USE IT AT YOUR OWN RISK</p>
+        <p>https://github.com/ziaxdk/ziax-dive</a>
       </ion-content>
     </ion-view>
   </script>
