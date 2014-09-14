@@ -35,6 +35,7 @@
         background: url('img/jog_knob.png');
       }
     </style>
+    <script src="phonegap.js"></script>
     <script type="text/javascript" src="js/lib/jogdial/jogdial.js"></script>
     <script type="text/javascript" src="lib/ionic/release/js/ionic.bundle.js"></script>
     <script type="text/javascript" src="js/ziaxdive.js"></script>
@@ -70,23 +71,36 @@
 
   <script id="templates/home.html" type="text/ng-template">
     <ion-view hide-back-button="true" title="Home">
+      <ion-content class="padding center">
+        <ion-slide-box show-pager="false">
 
-      <ion-nav-buttons side="right">
-        <a class="button" ui-sref="tabs.time">
-          Time
-        </a>
-      </ion-nav-buttons>
+          <ion-slide>
+            <div class="jog" jog-depth="data.depth" data-tap-disabled="true"></div>
+            <h1>Depth: <span add-metrics>{{data.depth}}</span></h1>
+          </ion-slide>
 
-      <ion-content direction="x" class="padding center">
-        <div class="box">
-          <div class="jog" jog-depth="data.depth"></div>
-        </div>
-        <h1>Depth: <span add-metrics>{{data.depth}}</span></h1>
+          <ion-slide>
+            <div class="jog" jog-time="data.time" depth="{{data.depth}}" data-tap-disabled="true"></div>
+            <h1 ng-class="{ safestop: data.safestop, decolimit: data.decolimit }">Time: <span>{{data.time|min}}</span></h1>
+            <h1>Group: <span>{{data.group|uppercase}}</span></h1>
+          </ion-slide>
+
+          <ion-slide>
+
+            <div class="jog" jog-surface="data.surface" jog-group="{{data.group}}" data-tap-disabled="true"></div>
+            <h1>Surface: {{data.surface|min}}</h1>
+
+          </ion-slide>
+        </ion-slide-box>
       </ion-content>
+
     </ion-view>
   </script>
 
-  <script id="templates/time.html" type="text/ng-template">
+
+
+
+<!--  <script id="templates/time.html" type="text/ng-template">
     <ion-view hide-back-button="true" title="Home">
 
       <ion-nav-buttons side="left">
@@ -111,7 +125,7 @@
       </ion-content>
     </ion-view>
   </script>
-
+-->
   <script id="templates/about.html" type="text/ng-template">
     <ion-view title="About">
       <ion-content class="padding">
