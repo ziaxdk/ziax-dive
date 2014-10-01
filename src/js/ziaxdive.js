@@ -271,8 +271,6 @@
       });
     };
   }])
-
-
   // .directive('evts', ['$ionicGesture', function($ionicGesture) {
   //   // Runs during compile
   //   return {
@@ -309,6 +307,7 @@
       depth: 10,
       time: 10,
       surface: 0
+      
     };
   }])
   .controller('rdp', ['$scope', 'rdpdata', 'RdpTable', function($scope, rdpdata, RdpTable) {

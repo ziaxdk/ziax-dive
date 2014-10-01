@@ -5,7 +5,9 @@ var gulp = require('gulp'),
     karma = require('gulp-karma'),
     browserSync = require('browser-sync'),
     runSequence = require('run-sequence'),
-    shelljs = require('shelljs');
+    shelljs = require('shelljs'),
+    request = require('request'),
+    _config = require('./_config.json');
     // nodemon = require('nodemon');
 
 
@@ -77,9 +79,23 @@ gulp.task('gitcommit', function(cb) {
 
 });
 
+gulp.task('pulllatest', function(cb) {
+  request({
+    url: 'https://build.phonegap.com/api/v1/apps/' + _config.buildpg.id + '?auth_token=' + _config.buildpg.auth_token,
+    method: 'PUT',
+    form: {
+      data: '{"pull":"true"}'
+    }
+  }, function(err, res, body) {
+    console.log(body);
+    cb();
+  });
+});
+
+// Build, and deploy and starts a new Phonegap build
 gulp.task('deploy', function(cb) {
  runSequence(
-  'clean', 'copy', 'dist', 'gitcommit',
+  'clean', 'copy', 'dist', 'gitcommit', 'pulllatest',
   cb);
 
 });
