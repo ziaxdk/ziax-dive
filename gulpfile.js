@@ -51,12 +51,12 @@ gulp.task('browser-sync', ['nodemon'], function() {
 
 gulp.task('default', ['express', 'watch']);
 gulp.task('dev', ['express', 'test', 'watch']);
-gulp.task('clean', function() { return gulp.src('build', {read: false}).pipe(clean()); });
+gulp.task('clean', function() { return gulp.src('build/www', {read: false}).pipe(clean()); });
 gulp.task('copy', function() {
   return gulp.src([
       'src/**/*',
       '!src/lib/**/*',
-    ]).pipe(gulp.dest('build'));
+    ]).pipe(gulp.dest('build/www'));
 });
 gulp.task('dist', function() {
   return gulp.src([
@@ -65,7 +65,7 @@ gulp.task('dist', function() {
       'src/lib/ionic/release/fonts/**',
       'src/lib/lodash/dist/lodash.js'
 
-    ], { base: 'src/lib' }).pipe(gulp.dest('build/lib/'));
+    ], { base: 'src/lib' }).pipe(gulp.dest('build/www/lib'));
 
 
 });

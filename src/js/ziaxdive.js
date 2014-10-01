@@ -271,6 +271,8 @@
       });
     };
   }])
+
+
   // .directive('evts', ['$ionicGesture', function($ionicGesture) {
   //   // Runs during compile
   //   return {
