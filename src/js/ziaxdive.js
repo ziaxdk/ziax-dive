@@ -1,4 +1,5 @@
 (function() {
+  'use strict';
   var safeFn = function(fn) {
     try {
       fn();
@@ -16,6 +17,9 @@
         if(StatusBar) {
           StatusBar.overlaysWebView(true);
         }
+      });
+      safeFn(function() {
+        navigator.vibrate(500);
       });
     });
   }])
@@ -58,17 +62,18 @@
     { depth: 25, mins: [4, 8, 10, 11, 13, 14, 15, 17, 18, 19, 21, 23, 23, 25, 26, 28, 29],                                                safe_stops: [ 25, 26, 28 ] }
   ])
   .constant('RdpSurface', [
-    { group: 'B', times: [ 48 ] },
-    { group: 'C', times: [ 22, 1*60+10 ] },
-    { group: 'D', times: [ 9, 31, 1*60+19] },
-    { group: 'E', times: [ 8, 17, 39, 1*60+28 ] },
-    { group: 'F', times: [ 8, 16, 25, 47, 1*60+35] },
-    { group: 'G', times: [ 7, 14, 23, 32, 54, 1*60+42 ]} ,
-    { group: 'H', times: [ 6, 13, 21, 29, 38, 60, 1*60+48] },
-    { group: 'I', times: [ 6, 12, 19, 27, 35, 44, 1*60+6, 1*60+54 ] },
-    { group: 'J', times: [ 6, 12, 18, 25, 32, 41, 60, 1*60+12, 2*60 ] },
-    { group: 'K', times: [ 5, 11, 17, 23, 30, 38, 46, 55, 1*60+17, 2*60+5 ] },
-    { group: 'L', times: [ 5, 10, 16, 22, 28, 35, 43, 51, 60, 1*60+22, 2*60+10 ] }
+    { group: 'A', times: [ 0, 3*60 ] },
+    { group: 'B', times: [ 48, 3*60+48 ] },
+    { group: 'C', times: [ 22, 1*60+10, 4*60+10 ] },
+    { group: 'D', times: [ 9, 31, 1*60+19, 4*60+19] },
+    { group: 'E', times: [ 8, 17, 39, 1*60+28, 4*60+28 ] },
+    { group: 'F', times: [ 8, 16, 25, 47, 1*60+35, 4*60+35] },
+    { group: 'G', times: [ 7, 14, 23, 32, 54, 1*60+42, 4*60+42 ]} ,
+    { group: 'H', times: [ 6, 13, 21, 29, 38, 60, 1*60+48, 4*60+48] },
+    { group: 'I', times: [ 6, 12, 19, 27, 35, 44, 1*60+6, 1*60+54, 4*60+54 ] },
+    { group: 'J', times: [ 6, 12, 18, 25, 32, 41, 60, 1*60+12, 2*60, 5*60 ] },
+    { group: 'K', times: [ 5, 11, 17, 23, 30, 38, 46, 55, 1*60+17, 2*60+5, 5*60+15 ] },
+    { group: 'L', times: [ 5, 10, 16, 22, 28, 35, 43, 51, 60, 1*60+22, 2*60+10, 5*60+19 ] }
   ])
   .constant('Settings', {
     metrics: [
@@ -82,94 +87,188 @@
       return (m > 0) ? m + 'h' + (val % 60) + 'm' : val + 'm';
     };
   }])
-  .directive('jogDepth', ['RdpTable', function(RdpTable){
+  .factory('LocalStorage', [function() {
+    return function LocalStorage(name) {
+      if (!name) throw new Error("need name");
+      var storage = (window.localStorage[name] && JSON.parse( window.localStorage[name] )) || {};
+      return {
+        get: function(key) {
+          return storage[key];
+        },
+        set: function(key, val) {
+          storage[key] = val;
+          window.localStorage[name] = JSON.stringify(storage);
+        }
+      };
+    };
+  }])
+  .directive('jogDepth', ['RdpTable', 'LocalStorage', function(RdpTable, LocalStorage) {
     // Runs during compile
     return {
       scope: {
         depth: '=jogDepth'
-      }, // {} = isolate, true = child, false/undefined = no change
-      link: function($scope, iElm, iAttrs, controller) {
-        var lastPos = 0;
-        var dial = JogDial(iElm[0], { wheelSize:'200px', knobSize:'70px', minDegree:0, maxDegree:360, degreeStartAt: 0 });
-        
-        dial.on("mousemove", function(event) {
-          var pos = Math.floor( Math.floor(event.target.rotation) / (360 / RdpTable.length) );
-          if (pos === lastPos) return;
-          lastPos = pos;
+      },
+      link: function($scope, iElm) {
+        var whenChanged = function(angle, max, changedCb) {
+          var pos = Math.floor((angle / 360 ) * max);
+          if (pos === lastpos) return;
+          lastpos = pos;
+          changedCb(pos);
+        };
+
+        var findVal = function(pos) {
           var e = RdpTable[pos];
-          if (!e) return;
-          $scope.$apply(function() {
-            $scope.depth = e.depth;
+          return (e) ? e.depth : 0;
+        };
+
+        var lastpos = 0;
+        var angle = LocalStorage('jogDepth').get('angle') || 0;
+        var dial = JogDial(iElm[0], { wheelSize:'200px', knobSize:'70px', minDegree:0, maxDegree:360, degreeStartAt: angle });
+
+        dial.on("mousemove", function(event) {
+          var newAngle = event.target.rotation;
+          LocalStorage('jogDepth').set('angle', newAngle);
+          whenChanged(newAngle, RdpTable.length, function(val) {
+            $scope.$apply(function() { $scope.depth = findVal(val); });
           });
         });
+
+        whenChanged(angle, RdpTable.length, function(val) { $scope.depth = findVal(val); });
       }
     };
   }])
-  .directive('jogTime', ['RdpTable', function(RdpTable){
+  .directive('jogTime', ['RdpTable', 'LocalStorage', function(RdpTable, LocalStorage) {
     // Runs during compile
     return {
       scope: {
         time: '=jogTime',
         depth: '@depth'
       }, // {} = isolate, true = child, false/undefined = no change
-      link: function($scope, iElm, iAttrs, controller) {
-        var lastPos = 0;
-        var dial = JogDial(iElm[0], { wheelSize:'200px', knobSize:'70px', minDegree:0, maxDegree:360, degreeStartAt: 0 });
+      link: function($scope, iElm) {
+        var whenChanged = function(angle, max, changedCb) {
+          var pos = Math.floor((angle / 360 ) * max);
+          if (pos === lastpos) return;
+          lastpos = pos;
+          changedCb(pos);
+        };
+
+        var findVal = function(pos) {
+          var e = RdpTable[pos];
+          return (e) ? e.depth : 0;
+        };
+
+        var lastpos = 0;
+        var angle = LocalStorage('jogTime').get('angle') || 0;
+        var rdp = RdpTable.filter(function(v) { return $scope.depth == v.depth; })[0];
+        var dial = JogDial(iElm[0], { wheelSize:'200px', knobSize:'70px', minDegree:0, maxDegree:360, degreeStartAt: angle });
+
+        dial.on("mousemove", function(event) {
+          var newAngle = event.target.rotation;
+          LocalStorage('jogTime').set('angle', newAngle);
+
+          whenChanged(newAngle, rdp.mins.length, function(val) {
+            $scope.$apply(function() {
+              $scope.time = rdp.mins[val];
+            });
+            // console.log(val, rdp.mins[val]);
+            // $scope.$apply(function() { $scope.depth = findVal(val); });
+          });
+        });
+
+        $scope.$watch('depth', function(v) {
+          LocalStorage('jogTime').set('angle', 0);
+          dial.angle(0);
+
+          
+          // whenChanged(0, 0, angular.noop);
+        });
+
+        whenChanged(angle, rdp.mins.length, function(val) { $scope.time = rdp.mins[val]; });
+
+
+
+        // var angle = LocalStorage('jogTime').get('angle') || 0;
+        // var lastPos = 0;
+        // var dial = JogDial(iElm[0], { wheelSize:'200px', knobSize:'70px', minDegree:0, maxDegree:360, degreeStartAt: 0 });
+
+        // var turnDaKnob = function(angle, apply) {
+        //   LocalStorage('jogTime').set('angle', angle);
+        //   var rdp = RdpTable.filter(function(v) { return $scope.depth == v.depth; })[0];
+        //   // console.log(rdp.mins);
+        //   var pos = Math.floor( Math.floor(angle) / (360 / rdp.mins.length) );
+        //   // console.log(pos, $scope.depth);
+        //   if (pos === lastPos) return;
+        //   lastPos = pos;
+        //   var e = rdp.mins[pos];
+        //   if (!e) return;
+        //   if (apply) {
+        //     $scope.$apply(function() {
+        //       $scope.time = e;
+        //     });
+        //   }
+        //   else {
+        //     $scope.time = e;
+        //     dial.angle(angle);
+        //   }
+        // };
+
+        // // turnDaKnob(angle);
         
-        dial.on("mousemove", function(event) {
-          var rdp = RdpTable.filter(function(v) { return $scope.depth == v.depth; })[0];
-          // console.log(rdp.mins);
-          var pos = Math.floor( Math.floor(event.target.rotation) / (360 / rdp.mins.length) );
-          // console.log(pos, $scope.depth);
-          if (pos === lastPos) return;
-          lastPos = pos;
-          var e = rdp.mins[pos];
-          if (!e) return;
-          $scope.$apply(function() {
-            $scope.time = e;
-          });
-        });
+        // dial.on("mousemove", function(event) {
+        //   turnDaKnob(event.target.rotation, true);
+        // });
+
+        // $scope.$watch('depth', function(v) {
+        //   console.log('depth', v);
+        // });
 
       }
     };
   }])
-  .directive('jogSurface', ['RdpSurface', function(RdpSurface){
-    // Runs during compile
-    return {
-      scope: {
-        group: '@jogGroup',
-        surface: '=jogSurface'
-      }, // {} = isolate, true = child, false/undefined = no change
-      link: function($scope, iElm, iAttrs, controller) {
-        $scope.$watch('group', function(v) {
-          console.log('group', v);
-        });
-        var dial = JogDial(iElm[0], { wheelSize:'200px', knobSize:'70px', minDegree:0, maxDegree:360, degreeStartAt: 0 });
-        dial.on("mousemove", function(event) {
-          $scope.$apply(function() {
-            $scope.surface = Math.floor(event.target.rotation);
-          });
+  // .directive('jogSurface', ['RdpSurface', function(RdpSurface){
+  //   // Runs during compile
+  //   return {
+  //     scope: {
+  //       group: '@jogGroup',
+  //       surface: '=jogSurface'
+  //     }, // {} = isolate, true = child, false/undefined = no change
+  //     link: function($scope, iElm, iAttrs, controller) {
+  //       $scope.$watch('group', function(v) {
+  //         console.log('group', v);
+  //       });
+  //       var dial = JogDial(iElm[0], { wheelSize:'200px', knobSize:'70px', minDegree:0, maxDegree:360, degreeStartAt: 0 });
+  //       dial.on("mousemove", function(event) {
+  //         $scope.$apply(function() {
+  //           $scope.surface = Math.floor(event.target.rotation);
+  //         });
 
-          // var rdp = RdpTable.filter(function(v) { return $scope.depth == v.depth; })[0];
-          // // console.log(rdp.mins);
-          // var pos = Math.floor( Math.floor(event.target.rotation) / (360 / rdp.mins.length) );
-          // // console.log(pos, $scope.depth);
-          // if (pos === lastPos) return;
-          // lastPos = pos;
-          // var e = rdp.mins[pos];
-          // if (!e) return;
-          // // $scope.$apply(function() {
-          // //   $scope.time = e;
-          // // });
-        });
+  //         // var rdp = RdpTable.filter(function(v) { return $scope.depth == v.depth; })[0];
+  //         // // console.log(rdp.mins);
+  //         // var pos = Math.floor( Math.floor(event.target.rotation) / (360 / rdp.mins.length) );
+  //         // // console.log(pos, $scope.depth);
+  //         // if (pos === lastPos) return;
+  //         // lastPos = pos;
+  //         // var e = rdp.mins[pos];
+  //         // if (!e) return;
+  //         // // $scope.$apply(function() {
+  //         // //   $scope.time = e;
+  //         // // });
+  //       });
 
-      }
-    };
-  }])
+  //     }
+  //   };
+  // }])
   .directive('addMetrics', ['Settings', function(Settings) {
     return function($scope, iElm) {
         iElm.addClass('metric').removeClass('ft');
         // iElm.addClass('ft').removeClass('metric');
+    };
+  }])
+  .directive('eventDisable', [function() {
+    return function($scope, iElm, iAttrs, controller) {
+      iElm.on('touchstart', function(event) {
+        event.stopPropagation();
+      });
     };
   }])
   // .directive('evts', ['$ionicGesture', function($ionicGesture) {
@@ -243,6 +342,6 @@
         }
       }
     };
-    
+
   }]);
 }());
