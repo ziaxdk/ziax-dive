@@ -1,8 +1,11 @@
 var gulp = require('gulp'),
+    clean = require('gulp-clean'),
     livereload = require('gulp-livereload'),
     gulpexpress = require('./lib/gulp-express.js'),
     karma = require('gulp-karma'),
-    browserSync = require('browser-sync');
+    browserSync = require('browser-sync'),
+    runSequence = require('run-sequence'),
+    shelljs = require('shelljs');
     // nodemon = require('nodemon');
 
 
@@ -48,3 +51,35 @@ gulp.task('browser-sync', ['nodemon'], function() {
 
 gulp.task('default', ['express', 'watch']);
 gulp.task('dev', ['express', 'test', 'watch']);
+gulp.task('clean', function() { return gulp.src('build', {read: false}).pipe(clean()); });
+gulp.task('copy', function() {
+  return gulp.src([
+      'src/**/*',
+      '!src/lib/**/*',
+    ]).pipe(gulp.dest('build'));
+});
+gulp.task('dist', function() {
+  return gulp.src([
+      'src/lib/ionic/release/js/ionic.bundle.js',
+      'src/lib/ionic/release/css/ionic.css',
+      'src/lib/ionic/release/fonts/**',
+      'src/lib/lodash/dist/lodash.js'
+
+    ], { base: 'src/lib' }).pipe(gulp.dest('build/lib/'));
+
+
+});
+gulp.task('gitcommit', function(cb) {
+  shelljs.cd('build');
+  shelljs.exec('git add -A .');
+  shelljs.exec('git commit -m "gulp build"');
+  shelljs.exec('git push origin master', cb);
+
+});
+
+gulp.task('deploy', function(cb) {
+ runSequence(
+  'clean', 'copy', 'dist', 'gitcommit',
+  cb);
+
+});
