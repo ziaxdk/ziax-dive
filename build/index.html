@@ -1,0 +1,148 @@
+<html ng-app="ziaxdiveApp">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+    
+    <title>Ziax Dive</title>
+
+    <link href="lib/ionic/release/css/ionic.css" rel="stylesheet">
+    <style type="text/css">
+      .safestop {
+        background-color: #ccc;
+      }
+      .decolimit {
+        background-color: #000;
+        color: #fff;
+      }
+
+      .center {
+        text-align: center;
+      }
+      .metric:after {
+        content: 'm';
+      }
+      .ft:after {
+        content: 'ft';
+      }
+
+      .jog {
+        background: url('img/jog_background.png');
+        height: 260px;
+        width: 260px;
+        margin: auto;
+      }
+      .jog div:first-child {
+        background: url('img/jog_knob.png');
+      }
+    </style>
+    <script src="phonegap.js"></script>
+    <script type="text/javascript" src="lib/lodash/dist/lodash.js"></script>
+    <script type="text/javascript" src="js/lib/jogdial/jogdial.js"></script>
+    <script type="text/javascript" src="lib/ionic/release/js/ionic.bundle.js"></script>
+    <script type="text/javascript" src="js/ziaxdive.js"></script>
+  </head>
+  <body>
+
+
+    <ion-nav-bar class="nav-title-slide-ios7 bar-positive">
+      <ion-nav-back-button class="button-icon ion-arrow-left-c">
+      </ion-nav-back-button>
+    </ion-nav-bar>
+             
+    <ion-nav-view animation="slide-left-right"></ion-nav-view>
+  </body>
+
+  <script id="templates/tabs.html" type="text/ng-template">
+    <ion-tabs class="tabs-icon-top tabs-positive">
+
+      <ion-tab title="Home" icon="ion-home" ui-sref="tabs.home">
+        <ion-nav-view name="home-tab"></ion-nav-view>
+      </ion-tab>
+
+      <ion-tab title="Settings" icon="ion-ios7-world" ui-sref="tabs.settings">
+        <ion-nav-view name="settings-tab"></ion-nav-view>
+      </ion-tab>
+
+      <ion-tab title="About" icon="ion-ios7-information" ui-sref="tabs.about">
+        <ion-nav-view name="about-tab"></ion-nav-view>
+      </ion-tab>
+
+    </ion-tabs>
+  </script>
+
+  <script id="templates/home.html" type="text/ng-template">
+    <ion-view hide-back-button="true" title="Home">
+      <ion-content class="center">
+        <ion-slide-box show-pager="false">
+
+          <ion-slide>
+            <div event-disable>
+              <div class="jog" jog-depth="data.depth" data-tap-disabled="true"></div>
+            </div>
+            <h1>Depth: <span add-metrics>{{data.depth}}</span></h1>
+
+          </ion-slide>
+
+          <ion-slide>
+            <div event-disable>
+              <div class="jog" jog-time="data.time" depth="{{data.depth}}" data-tap-disabled="true"></div>
+            </div>
+            <h1 ng-class="{ safestop: data.safestop, decolimit: data.decolimit }">Time: <span>{{data.time|min}}</span></h1>
+            <h1>Group: <span>{{data.group|uppercase}}</span></h1>
+          </ion-slide>
+
+          <ion-slide>
+
+            <div event-disable>
+              <div class="jog" jog-surface="data.surface" jog-group="{{data.group}}" data-tap-disabled="true"></div>
+            </div>
+            <h1>Surface: {{data.surface|min}}</h1>
+
+          </ion-slide>
+        </ion-slide-box>
+      </ion-content>
+
+    </ion-view>
+  </script>
+
+
+
+
+<!--  <script id="templates/time.html" type="text/ng-template">
+    <ion-view hide-back-button="true" title="Home">
+
+      <ion-nav-buttons side="left">
+        <a class="button" ui-sref="tabs.home">
+          Depth
+        </a>
+      </ion-nav-buttons>
+
+      <ion-nav-buttons side="right">
+        <a class="button" ui-sref="tabs.surface">
+          Surface
+        </a>
+      </ion-nav-buttons>
+
+
+      <ion-content class="padding center">
+        <div class="box">
+          <div class="jog" jog-time="data.time" depth="{{data.depth}}"></div>
+        </div>
+        <h1 ng-class="{ safestop: data.safestop, decolimit: data.decolimit }">Time: <span>{{data.time}}</span></h1>
+        <h1>Group: <span>{{data.group|uppercase}}</span></h1>
+      </ion-content>
+    </ion-view>
+  </script>
+-->
+  <script id="templates/about.html" type="text/ng-template">
+    <ion-view title="About">
+      <ion-content class="padding">
+        <h1>Ziax dive</h1>
+        <p>I took the PADI Open Water certificate, and we learned to use the RDPs table from PADI. I thought it could be fun and educational to build an app, which calculates the values.</p>
+        <p>USE IT AT YOUR OWN RISK</p>
+        <p>https://github.com/ziaxdk/ziax-dive</a>
+      </ion-content>
+    </ion-view>
+  </script>
+
+</html>
