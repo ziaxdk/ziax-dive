@@ -29,14 +29,23 @@
       .state('tabs', {
         url: "/tab",
         abstract: true,
-        templateUrl: "templates/tabs.html"
+        templateUrl: "tmpl/tabs.html"
       })
       .state('tabs.home', {
         url: "/home",
         views: {
           'home-tab': {
-            templateUrl: "templates/home.html",
+            templateUrl: "tmpl/home.html",
             controller: 'rdp'
+          }
+        }
+      })
+      .state('tabs.settings', {
+        url: "/settings",
+        views: {
+          'settings-tab': {
+            templateUrl: "tmpl/settings.html",
+            controller: 'settings'
           }
         }
       })
@@ -44,7 +53,7 @@
         url: "/about",
         views: {
           'about-tab': {
-            templateUrl: "templates/about.html"
+            templateUrl: "tmpl/about.html"
           }
         }
       });
@@ -106,34 +115,29 @@
     // Runs during compile
     return {
       scope: {
-        depth: '=jogDepth'
+        depthIndex: '=jogDepth',
+        jogMax: '=jogMax'
       },
       link: function($scope, iElm) {
+        var lastpos,
+            angle = LocalStorage('jogDepth').get('angle') || 0;
+        var dial = JogDial(iElm[0], { wheelSize: '200px', knobSize: '70px', minDegree: 0, maxDegree: 360, degreeStartAt: angle });
+
+        dial.on("mousemove", function(event) {
+          var newAngle = event.target.rotation;
+          LocalStorage('jogDepth').set('angle', newAngle);
+          whenChanged(newAngle, $scope.jogMax, function(val) {
+            $scope.$apply(function() { $scope.depthIndex = val; });
+          });
+        });
+
         var whenChanged = function(angle, max, changedCb) {
           var pos = Math.floor((angle / 360 ) * max);
           if (pos === lastpos) return;
           lastpos = pos;
           changedCb(pos);
         };
-
-        var findVal = function(pos) {
-          var e = RdpTable[pos];
-          return (e) ? e.depth : 0;
-        };
-
-        var lastpos = 0;
-        var angle = LocalStorage('jogDepth').get('angle') || 0;
-        var dial = JogDial(iElm[0], { wheelSize:'200px', knobSize:'70px', minDegree:0, maxDegree:360, degreeStartAt: angle });
-
-        dial.on("mousemove", function(event) {
-          var newAngle = event.target.rotation;
-          LocalStorage('jogDepth').set('angle', newAngle);
-          whenChanged(newAngle, RdpTable.length, function(val) {
-            $scope.$apply(function() { $scope.depth = findVal(val); });
-          });
-        });
-
-        whenChanged(angle, RdpTable.length, function(val) { $scope.depth = findVal(val); });
+        whenChanged(angle, $scope.jogMax, function(val) { $scope.depthIndex = val; });
       }
     };
   }])
@@ -141,10 +145,23 @@
     // Runs during compile
     return {
       scope: {
-        time: '=jogTime',
-        depth: '@depth'
+        timeIndex: '=jogTime',
+        depthIndex: '=depthIndex',
+        jogMax: '=jogMax',
       }, // {} = isolate, true = child, false/undefined = no change
       link: function($scope, iElm) {
+        var lastpos,
+            angle = LocalStorage('jogTime').get('angle') || 0;
+        var dial = JogDial(iElm[0], { wheelSize: '200px', knobSize: '70px', minDegree: 0, maxDegree: 360, degreeStartAt: angle });
+
+        dial.on("mousemove", function(event) {
+          var newAngle = event.target.rotation;
+          LocalStorage('jogTime').set('angle', newAngle);
+          whenChanged(newAngle, $scope.jogMax, function(val) {
+            $scope.$apply(function() { $scope.timeIndex = val; });
+          });
+        });
+
         var whenChanged = function(angle, max, changedCb) {
           var pos = Math.floor((angle / 360 ) * max);
           if (pos === lastpos) return;
@@ -152,112 +169,12 @@
           changedCb(pos);
         };
 
-        var findVal = function(pos) {
-          var e = RdpTable[pos];
-          return (e) ? e.depth : 0;
-        };
-
-        var lastpos = 0;
-        var angle = LocalStorage('jogTime').get('angle') || 0;
-        var rdp = RdpTable.filter(function(v) { return $scope.depth == v.depth; })[0];
-        var dial = JogDial(iElm[0], { wheelSize:'200px', knobSize:'70px', minDegree:0, maxDegree:360, degreeStartAt: angle });
-
-        dial.on("mousemove", function(event) {
-          var newAngle = event.target.rotation;
-          LocalStorage('jogTime').set('angle', newAngle);
-
-          whenChanged(newAngle, rdp.mins.length, function(val) {
-            $scope.$apply(function() {
-              $scope.time = rdp.mins[val];
-            });
-            // console.log(val, rdp.mins[val]);
-            // $scope.$apply(function() { $scope.depth = findVal(val); });
-          });
+        $scope.$watch('jogMax', function(max) {
+          whenChanged(angle, $scope.jogMax, function(val) { $scope.timeIndex = val; });
         });
-
-        $scope.$watch('depth', function(v) {
-          LocalStorage('jogTime').set('angle', 0);
-          dial.angle(0);
-
-          
-          // whenChanged(0, 0, angular.noop);
-        });
-
-        whenChanged(angle, rdp.mins.length, function(val) { $scope.time = rdp.mins[val]; });
-
-
-
-        // var angle = LocalStorage('jogTime').get('angle') || 0;
-        // var lastPos = 0;
-        // var dial = JogDial(iElm[0], { wheelSize:'200px', knobSize:'70px', minDegree:0, maxDegree:360, degreeStartAt: 0 });
-
-        // var turnDaKnob = function(angle, apply) {
-        //   LocalStorage('jogTime').set('angle', angle);
-        //   var rdp = RdpTable.filter(function(v) { return $scope.depth == v.depth; })[0];
-        //   // console.log(rdp.mins);
-        //   var pos = Math.floor( Math.floor(angle) / (360 / rdp.mins.length) );
-        //   // console.log(pos, $scope.depth);
-        //   if (pos === lastPos) return;
-        //   lastPos = pos;
-        //   var e = rdp.mins[pos];
-        //   if (!e) return;
-        //   if (apply) {
-        //     $scope.$apply(function() {
-        //       $scope.time = e;
-        //     });
-        //   }
-        //   else {
-        //     $scope.time = e;
-        //     dial.angle(angle);
-        //   }
-        // };
-
-        // // turnDaKnob(angle);
-        
-        // dial.on("mousemove", function(event) {
-        //   turnDaKnob(event.target.rotation, true);
-        // });
-
-        // $scope.$watch('depth', function(v) {
-        //   console.log('depth', v);
-        // });
-
       }
     };
   }])
-  // .directive('jogSurface', ['RdpSurface', function(RdpSurface){
-  //   // Runs during compile
-  //   return {
-  //     scope: {
-  //       group: '@jogGroup',
-  //       surface: '=jogSurface'
-  //     }, // {} = isolate, true = child, false/undefined = no change
-  //     link: function($scope, iElm, iAttrs, controller) {
-  //       $scope.$watch('group', function(v) {
-  //         console.log('group', v);
-  //       });
-  //       var dial = JogDial(iElm[0], { wheelSize:'200px', knobSize:'70px', minDegree:0, maxDegree:360, degreeStartAt: 0 });
-  //       dial.on("mousemove", function(event) {
-  //         $scope.$apply(function() {
-  //           $scope.surface = Math.floor(event.target.rotation);
-  //         });
-
-  //         // var rdp = RdpTable.filter(function(v) { return $scope.depth == v.depth; })[0];
-  //         // // console.log(rdp.mins);
-  //         // var pos = Math.floor( Math.floor(event.target.rotation) / (360 / rdp.mins.length) );
-  //         // // console.log(pos, $scope.depth);
-  //         // if (pos === lastPos) return;
-  //         // lastPos = pos;
-  //         // var e = rdp.mins[pos];
-  //         // if (!e) return;
-  //         // // $scope.$apply(function() {
-  //         // //   $scope.time = e;
-  //         // // });
-  //       });
-
-  //     }
-  //   };
-  // }])
   .directive('addMetrics', ['Settings', function(Settings) {
     return function($scope, iElm) {
         iElm.addClass('metric').removeClass('ft');
@@ -265,84 +182,50 @@
     };
   }])
   .directive('eventDisable', [function() {
-    return function($scope, iElm, iAttrs, controller) {
+    return function($scope, iElm) {
       iElm.on('touchstart', function(event) {
         event.stopPropagation();
       });
     };
   }])
-  // .directive('evts', ['$ionicGesture', function($ionicGesture) {
-  //   // Runs during compile
-  //   return {
-  //     // name: '',
-  //     // priority: 1,
-  //     // terminal: true,
-  //     // scope: {}, // {} = isolate, true = child, false/undefined = no change
-  //     // controller: function($scope, $element, $attrs, $transclude) {},
-  //     // require: 'ngModel', // Array = multiple requires, ? = optional, ^ = check parent elements
-  //     // restrict: 'A', // E = Element, A = Attribute, C = Class, M = Comment
-  //     // template: '',
-  //     // templateUrl: '',
-  //     // replace: true,
-  //     // transclude: true,
-  //     // compile: function(tElement, tAttrs, function transclude(function(scope, cloneLinkingFn){ return function linking(scope, elm, attrs){}})),
-  //     link: function($scope, $element, $attrs) {
-  //       $element.on('drag', function() {
-  //         console.log('tock');
-
-  //       });
-  //       // console.log($element);
-  //       // $element.off('touchstart touchend touchmove')
-  //       // $ionicGesture.on('touch', function(e) {
-  //       //   e.cancelBubble = true;
-  //       //   e.preventDefault();
-  //       //   console.log('tock', e);
-  //       //   // $scope.$apply($attrs[ngName]);
-  //       // }, $element);
-  //     }
-  //   };
-  // }])
   .service('rdpdata', ['RdpTable', 'Settings', function(RdpTable, Settings) {
     return {
       depth: 10,
       time: 10,
       surface: 0
-      
+
+    };
+  }])
+  .controller('settings', ['$scope', 'LocalStorage', function($scope, LocalStorage) {
+    var settings = new LocalStorage('settings').get('data');
+    $scope.form = angular.extend({}, { metric: true }, settings);
+
+    $scope.save = function() {
+      new LocalStorage('settings').set('data', $scope.form);
     };
   }])
   .controller('rdp', ['$scope', 'rdpdata', 'RdpTable', function($scope, rdpdata, RdpTable) {
     $scope.data = rdpdata;
+    $scope.RdpTable = RdpTable;
+    $scope.group = {
+      mins: []
+    };
 
-    // $scope.depth = 10;
-    // $scope.time = 10;
-    // $scope.safestop = false;
-
-    // $scope.metric = Settings.metrics[0].text;
-
-    $scope.$watch('data.time', function(v) {
-       findGroup();
+    $scope.$watch('data.depthIndex', function(v) {
+      if (!angular.isDefined(v)) return;
+       // console.log('data.depthIndex', v);
+       $scope.group = RdpTable[v];
+       $scope.data.depth = $scope.group.depth;
     });
 
-    // console.log($scope)
-    var findGroup = function() {
-      var rdp = RdpTable.filter(function(v) { return $scope.data.depth == v.depth; })[0];
-      if (!rdp) return;
-      for (var i = 0; i <= rdp.mins.length; i++) {
-        if ($scope.data.time == rdp.mins[i]) {
-          var group = String.fromCharCode(97 + i);
-          $scope.data.group = group;
-          if (i === rdp.mins.length-1) {
-            $scope.data.safestop = false;
-            $scope.data.decolimit = true;
-          }
-          else {
-            $scope.data.safestop = rdp.safe_stops.indexOf($scope.data.time) !== -1;
-            $scope.data.decolimit = false;
-          }
-          return;
-        }
-      }
-    };
+    $scope.$watch('data.timeIndex', function(v) {
+      if (!angular.isDefined(v)) return;
+      // console.log('$scope.timeIndex', v);
+      $scope.data.time = $scope.group.mins[v];
+      $scope.data.group = String.fromCharCode(97 + v);
+      $scope.data.decolimit = v === $scope.group.mins.length - 1;
+      $scope.data.safestop = $scope.group.safe_stops.indexOf($scope.data.time) !== -1;
+    });
 
   }]);
 }());

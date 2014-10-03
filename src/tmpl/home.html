@@ -1,0 +1,27 @@
+<ion-view hide-back-button="true" title="Home">
+  <ion-content class="center">
+    <ion-slide-box show-pager="false">
+
+      <ion-slide>
+        <div event-disable class="jog" jog-depth="data.depthIndex" jog-max="RdpTable.length"></div>
+        <h1>Depth: <span add-metrics>{{data.depth}}</span></h1>
+
+      </ion-slide>
+
+      <ion-slide>
+        <div event-disable class="jog" jog-time="data.timeIndex" depthIndex="data.depthIndex" jog-max="group.mins.length"></div>
+        <h1 ng-class="{ safestop: data.safestop, decolimit: data.decolimit }">Time: <span>{{data.time|min}}</span></h1>
+        <h1>Group: <span>{{data.group|uppercase}}</span></h1>
+      </ion-slide>
+
+      <ion-slide>
+        <div event-disable>
+          <div class="jog" jog-surface="data.surface" jog-group="{{data.group}}"></div>
+        </div>
+        <h1>Surface: {{data.surface|min}}</h1>
+      </ion-slide>
+
+    </ion-slide-box>
+  </ion-content>
+
+</ion-view>
