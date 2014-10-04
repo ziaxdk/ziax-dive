@@ -15,10 +15,10 @@
       </ion-slide>
 
       <ion-slide>
-        <div event-disable>
-          <div class="jog" jog-surface="data.surface" jog-group="{{data.group}}"></div>
-        </div>
-        <h1>Surface: {{data.surface|min}}</h1>
+        <div event-disable class="jog" jog-surface="data.surfaceIndex" jog-max="RdpSurface.times.length"></div>
+        <!-- <h1>Surface: {{data.surface|min}}</h1> -->
+        <h3>Interval: {{data.surfaceMin|min}} - {{data.surfaceMax|min}}</h3>
+        <h1>Group: <span>{{data.newGroup|uppercase}}</span></h1>
       </ion-slide>
 
     </ion-slide-box>
