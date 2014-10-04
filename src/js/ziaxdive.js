@@ -250,13 +250,18 @@
   }])
   .controller('settings', ['$scope', 'LocalStorage', function($scope, LocalStorage) {
     var settings = new LocalStorage('settings').get('data');
-    $scope.form = angular.extend({}, { metric: true }, settings);
+    $scope.form = angular.extend({}, { metric: true, cold: false }, settings);
 
-    $scope.save = function() {
+    $scope.$watch('form', function(v) {
       new LocalStorage('settings').set('data', $scope.form);
-    };
+    }, true);
+
+    // $scope.save = function() {
+    //   new LocalStorage('settings').set('data', $scope.form);
+    // };
   }])
   .controller('rdp', ['$scope', 'rdpdata', 'RdpTable', 'RdpSurface', function($scope, rdpdata, RdpTable, RdpSurface) {
+    $scope.log = [];
     $scope.data = rdpdata;
 
     $scope.RdpTable = RdpTable;
@@ -294,6 +299,12 @@
       $scope.data.surfaceMax = $scope.data.surface;
       $scope.data.surfaceMin = (--v === -1) ? 0 : $scope.RdpSurface.times[v] + 1;
     });
+
+    $scope.use = function() {
+      var d = $scope.data;
+      $scope.log.push({ depth: d.depth, bottomTime: d.time, surfaceTime: d.surface });
+      console.log('use', $scope.log);
+    }
 
   }]);
 }());

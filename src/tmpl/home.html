@@ -11,7 +11,7 @@
       <ion-slide>
         <div event-disable class="jog" jog-time="data.timeIndex" depthIndex="data.depthIndex" jog-max="group.mins.length"></div>
         <h1 ng-class="{ safestop: data.safestop, decolimit: data.decolimit }">Time: <span>{{data.time|min}}</span></h1>
-        <h1>Group: <span>{{data.group|uppercase}}</span></h1>
+        <h1>Pressure group: <span>{{data.group|uppercase}}</span></h1>
       </ion-slide>
 
       <ion-slide>
@@ -19,6 +19,18 @@
         <!-- <h1>Surface: {{data.surface|min}}</h1> -->
         <h3>Interval: {{data.surfaceMin|min}} - {{data.surfaceMax|min}}</h3>
         <h1>Group: <span>{{data.newGroup|uppercase}}</span></h1>
+      </ion-slide>
+
+      <ion-slide>
+        <h1>Planner</h1>
+        <div class="list">
+          <a class="item" href="javascript:;" ng-repeat="l in log">
+            D:<span add-metrics>{{l.depth}}</span> - BT:{{l.bottomTime|min}} - ST:{{l.surfaceTime|min}}
+          </a>
+        </div>
+        <button class="button button-full button-positive" ng-click="use()">
+          Use
+        </button>
       </ion-slide>
 
     </ion-slide-box>
