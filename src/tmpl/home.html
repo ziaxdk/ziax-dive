@@ -2,30 +2,52 @@
   <ion-content class="center">
     <ion-slide-box show-pager="false">
 
-      <ion-slide>
-        <div event-disable class="jog" jog-depth="data.depthIndex" jog-max="RdpTable.length"></div>
-        <h1>Depth: <span add-metrics>{{data.depth}}</span></h1>
+      <ion-slide class="center_p">
+        <div class="center_c">
+          <h2>Depth: <span add-metrics>{{data.depth}}</span></h2>
 
+          <div ng-show="isRepeat()">
+            <h5>Group: {{ lastDive.newGroup|uppercase }}</h5>
+            <h5>RNT: {{ group.mins[ lastDive.newGroupIndex ]|min }}</h5>
+            <h5>ANDL: {{ group.mins.slice(-1)[0] - group.mins[ lastDive.newGroupIndex ]|min }}</h5>
+          </div>
+
+          <div event-disable class="jog" jog="data.depthIndex" jog-max="RdpTable.length" jog-storage="jog.depthIndex"></div>
+        </div>
       </ion-slide>
 
-      <ion-slide>
-        <div event-disable class="jog" jog-time="data.timeIndex" depthIndex="data.depthIndex" jog-max="group.mins.length"></div>
-        <h1 ng-class="{ safestop: data.safestop, decolimit: data.decolimit }">Time: <span>{{data.time|min}}</span></h1>
-        <h1>Pressure group: <span>{{data.group|uppercase}}</span></h1>
+      <ion-slide class="center_p">
+        <div class="center_c">
+
+          <h2 ng-hide="isRepeat()" ng-class="{ safestop: data.safestop, decolimit: data.decolimit }">ABT: <span>{{data.time|min}}</span></h2>
+          <h2 ng-show="isRepeat()" ng-class="{ safestop: data.safestop, decolimit: data.decolimit }">TBT: <span>{{data.time+group.mins[ lastDive.newGroupIndex ]|min}}</h2>
+
+          <div ng-show="isRepeat()">
+            <h5>Group: {{ lastDive.newGroup|uppercase }}</h5>
+            <h5>RNT: {{ group.mins[ lastDive.newGroupIndex ]|min }} + ABT: +{{data.time|min}}</h5>
+            <h5>ANDL: {{ group.mins.slice(-1)[0] - group.mins[ lastDive.newGroupIndex ]|min }}</h5>
+          </div>
+
+          <div event-disable class="jog" jog="data.timeIndex" jog-max="group.mins.length" jog-storage="jog.timeIndex"></div>
+          <h2>Pressure group: <span>{{data.group|uppercase}}</span></h2>
+        </div>
       </ion-slide>
 
-      <ion-slide>
-        <div event-disable class="jog" jog-surface="data.surfaceIndex" jog-max="RdpSurface.times.length"></div>
-        <!-- <h1>Surface: {{data.surface|min}}</h1> -->
-        <h3>Interval: {{data.surfaceMin|min}} - {{data.surfaceMax|min}}</h3>
-        <h1>Group: <span>{{data.newGroup|uppercase}}</span></h1>
+      <ion-slide class="center_p">
+        <div class="center_c">
+          <!-- <h1>Surface: {{data.surface|min}}</h1> -->
+          <h2>SI: {{data.surfaceMin|min}} - {{data.surfaceMax|min}}</h2>
+          <h2>Group: <span>{{data.newGroup|uppercase}}</span></h2>
+          
+          <div event-disable class="jog" jog="data.surfaceIndex" jog-max="RdpSurface.times.length" jog-storage="jog.surfaceIndex"></div>
+        </div>
       </ion-slide>
 
       <ion-slide>
         <h1>Planner</h1>
         <div class="list">
-          <a class="item" href="javascript:;" ng-repeat="l in log">
-            D:<span add-metrics>{{l.depth}}</span> - BT:{{l.bottomTime|min}} - ST:{{l.surfaceTime|min}}
+          <a class="item" href="javascript:;" ng-repeat="l in previousDives">
+            #{{$index+1}} - D:<span add-metrics>{{l.depth}}</span> - ABT:{{l.bottomTime|min}} - SI:{{l.surfaceTime|min}}
           </a>
         </div>
         <button class="button button-full button-positive" ng-click="use()">
