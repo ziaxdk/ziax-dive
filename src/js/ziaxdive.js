@@ -245,11 +245,10 @@
     //   new LocalStorage('settings').set('data', $scope.form);
     // };
   }])
-  .controller('rdp', ['$scope', 'rdpdata', 'RdpTable', 'RdpSurface', 'RdpRepeat', function($scope, rdpdata, RdpTable, RdpSurface, RdpRepeat) {
-    $scope.log = [];
+  .controller('rdp', ['$scope', '$ionicSlideBoxDelegate', 'rdpdata', 'RdpTable', 'RdpSurface', 'RdpRepeat', function($scope, $ionicSlideBoxDelegate, rdpdata, RdpTable, RdpSurface, RdpRepeat) {
+    // $scope.log = [];
     $scope.previousDives = [];
-    // $scope.previousDives = [{ depth: 14, bottomTime: 50, surfaceTime: 108, newGroupIndex: 3 }];
-    $scope.previousDives.push({ depth: 14, bottomTime: 50, surfaceTime: 108, newGroupIndex: 3, newGroup: 'd' });
+    // $scope.previousDives.push({ depth: 14, bottomTime: 50, surfaceTime: 108, newGroupIndex: 3, newGroup: 'd' });
 
     // $scope.previousDive = RdpRepeat[3];
     $scope.previousDive = { group: null };
@@ -336,7 +335,7 @@
     $scope.use = function() {
       var d = $scope.data;
       $scope.previousDives.push({ depth: d.depth, bottomTime: d.time, surfaceTime: d.surface, newGroupIndex: d.newGroupIndex, newGroup: d.newGroup });
-
+      $ionicSlideBoxDelegate.slide(0);
       // $scope.log.push({ depth: d.depth, bottomTime: d.time, surfaceTime: d.surface });
       // // // console.log('use', $scope.log);
       // // // $scope.previousDive = RdpRepeat[$scope.data.newGroupIndex];
